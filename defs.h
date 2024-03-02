@@ -1,3 +1,4 @@
+#include "processInfo.h"
 struct buf;
 struct context;
 struct file;
@@ -108,6 +109,9 @@ void            exit(void);
 int             fork(void);
 int             growproc(int);
 int             kill(int);
+int             getNumProc(void);
+int             getMaxPid(void);
+int             getProcInfo(int, struct processInfo*);
 struct cpu*     mycpu(void);
 struct proc*    myproc();
 void            pinit(void);

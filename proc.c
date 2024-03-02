@@ -532,3 +532,60 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+int getNumProc(void)
+{
+  struct proc *p;
+  int count = 0;
+  acquire(&ptable.lock);
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state != UNUSED)
+      count++;
+  }
+  release(&ptable.lock);
+
+  return count;
+}
+
+int getMaxPid(void)
+{
+  struct proc *p;
+  int max = 0;
+  acquire(&ptable.lock);
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state != UNUSED && p->pid > max)
+      max = p->pid;
+  }
+  release(&ptable.lock);
+
+  return max;
+}
+
+int
+getProcInfo(int pid, struct processInfo *pi)
+{
+  struct proc *p;
+  int num_of_open_files = 0;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      pi->state = p->state;
+      pi->ppid = p->parent->pid;
+      pi->sz = p->sz;
+      for(int i = 0; i < NOFILE; i++){
+        if(p->ofile[i] != 0)
+          num_of_open_files++;
+      }
+      pi->nfd = num_of_open_files;
+      // Todo: fix this to count how many
+      pi->nrswitch = p->context==0? 0 : 1;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
